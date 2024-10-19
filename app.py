@@ -1,9 +1,20 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
-import plotly.express as px  # Import Plotly for visualization
-# from fpdf import FPDF
+import numpy as np
+import tensorflow as tf
+import plotly.express as px
 
+# Load the pre-trained model
+model = tf.keras.models.load_model('pneumonia_detection_model.h5')
+
+# Function to preprocess the uploaded image
+def preprocess_image(image):
+    image = image.resize((150, 150))  # Resize to match the model's expected input size
+    image_array = np.array(image)
+    image_array = image_array / 255.0  # Normalize the image
+    image_array = np.expand_dims(image_array, axis=0)  # Add batch dimension
+    return image_array
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
@@ -11,58 +22,37 @@ page = st.sidebar.radio("Go to", ("Home", "Predictor", "Recommendations", "Dr. S
 
 # Home Page
 if page == "Home":
-    # Top logo and title
     col1, col2 = st.columns([1, 8])
     with col1:
-        logo = Image.open('logo.png')  # Ensure you have a 'logo.png' file in the same directory
+        logo = Image.open('logo.png')
         st.image(logo, width=80)
     with col2:
         st.title("Medify")
-
-    # Heading for the page
     st.header("Pneumonia Detection Through Chest X-ray")
-
-    # Full-width image
-    st.image("image.png", use_column_width=True)  # Ensure you have an 'xray_image.png' file
-
-    # Subtitle
+    st.image("image.png", use_column_width=True)
     st.subheader("About the Model")
-
-    # Explanation paragraph
     st.write("""
     Our Pneumonia Detection model leverages deep learning algorithms to analyze chest X-rays 
     and determine the likelihood of pneumonia. It aims to assist medical professionals in making 
     faster and more accurate diagnoses.
     """)
-
-    # Expanders for additional information
     with st.expander("Data"):
         st.write("""
         The dataset used for training the model consists of thousands of labeled chest X-rays, 
         including cases of pneumonia and healthy lungs.
         """)
-        
-        # Load and display the dummy dataset
-        st.write("Here is a preview of the dataset used:")
-        # Load the CSV file
-        df = pd.read_csv('sample_apriori_data.csv')  # Make sure the file exists in the same directory
-        st.dataframe(df.head())  # Display first few rows of the dataset
-
+        df = pd.read_csv('sample_apriori_data.csv')
+        st.dataframe(df.head())
     with st.expander("Data Visualization"):
         st.write("""
         Visualizations include heatmaps highlighting the regions of interest on the X-rays 
         where the model detects pneumonia.
         """)
-
-        # Sample data with the attributes: Gender, Age Group, Income Level, Spending Category, and Loyalty
-        # Ensure that 'sample_apriori_data.csv' contains these columns
         if 'Gender' in df.columns and 'Age Group' in df.columns:
-            # Create a line plot using Plotly
             fig = px.line(df, x='Age Group', y='Income Level', color='Gender', 
                           title="Income Level by Age Group and Gender",
                           labels={"Income Level": "Income Level (in $)", "Age Group": "Age Group"})
             st.plotly_chart(fig)
-
     with st.expander("Data Accuracy"):
         st.write("""
         Our model achieves an accuracy of 90%, with continuous efforts to improve through more 
@@ -70,27 +60,26 @@ if page == "Home":
         """)
 
 # Predictor Page
-# Predictor Page
 elif page == "Predictor":
     st.title("Pneumonia Predictor")
-
-    # Customize the label text for the image upload widget using st.markdown with CSS
     st.markdown("<h4 style='font-size:22px; font-weight:bold; color:lightblue;'>Upload a Chest X-ray Image</h4>", unsafe_allow_html=True)
-    
-    # Image upload widget
     uploaded_file = st.file_uploader("", type=["jpg", "png", "jpeg"])
-
-    # Predict button
+    
     if uploaded_file is not None:
         if st.button("Predict"):
-            # Display the uploaded image
             image = Image.open(uploaded_file)
             st.image(image, caption="Uploaded X-ray", use_column_width=True)
 
-            # Dummy prediction result text
-            st.subheader("Prediction Result")
-            st.write("This is a dummy prediction: The model detects **no signs of pneumonia** in the uploaded image.")
+            # Preprocess the image and make a prediction
+            processed_image = preprocess_image(image)
+            prediction = model.predict(processed_image)
 
+            # Display prediction result
+            st.subheader("Prediction Result")
+            if prediction[0][0] > 0.5:
+                st.write("The model detects **signs of pneumonia** in the uploaded image.")
+            else:
+                st.write("The model detects **no signs of pneumonia** in the uploaded image.")
 
 # Recommendations Page
 elif page == "Recommendations":
@@ -101,6 +90,7 @@ elif page == "Recommendations":
 elif page == "Dr. Suggestions":
     st.title("Dr. Suggestions")
     st.write("This page will provide suggestions for doctors based on your location and condition.")
+
 
 
 
