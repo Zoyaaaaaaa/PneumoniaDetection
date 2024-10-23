@@ -166,12 +166,70 @@ def main():
     page = st.sidebar.radio("Go to", ["Home", "Pneumonia Detection", "Patient Information", "Care Plan", "Tips and Resources","Post Treatment"])
     
     if page == "Home":
-        st.title("PneumoTrack")
-        st.header("Pneumonia Detection Through Chest X-ray")
-        st.write("Our Pneumonia Detection model leverages deep learning algorithms to analyze chest X-rays and determine the likelihood of pneumonia.")
+            col1, col2 = st.columns([1, 8])
+            with col1:
+                try:
+                    logo = Image.open('logo.png')
+                    st.image(logo, width=100)
+                except:
+                    st.warning("Logo image not found. Please ensure 'logo.png' is in the correct directory.")
 
+            with col2:
+                st.title("PneumoTrack")
+
+            st.header("Pneumonia Detection Through Chest X-ray")
+            
+            try:
+                st.image("landing.png", use_column_width=True)
+            except:
+                st.warning("Main image not found. Please ensure 'image.png' is in the correct directory.")
+
+            st.subheader("About the Model")
+            st.write("""
+            Our Pneumonia Detection model leverages deep learning algorithms to analyze chest X-rays 
+            and determine the likelihood of pneumonia. It aims to assist medical professionals in making 
+            faster and more accurate diagnoses.
+            """)
+            
+
+            with st.expander("Visualization of accuracy shift per epoch."):
+                st.write("""
+                The accuracy shift per epoch graph in a pneumonia detection system illustrates
+                 changes in model accuracy over training epochs. The X-axis represents epochs, and
+                 the Y-axis shows accuracy percentages for training and validation. Ideally, both accuracies 
+                should rise together; a widening gap indicates overfitting. High training accuracy reflects
+                 effective learning, while high validation accuracy shows good generalization to unseen data.
+                 Monitoring these shifts helps 
+                 identify and address potential issues like overfitting or underfitting.
+                """)
+                st.image("epoc.png", use_column_width=True)
+
+                
+            with st.expander("ROC Visualization"):
+                st.write("""
+                ROC (Receiver Operating Characteristic) visualization
+                          in a pneumonia detection system assesses model performance by plotting 
+                         the true positive rate (sensitivity) against the false positive rate (1 - specificity). 
+                         A curve closer to the top-left corner indicates better performance, while the area
+                          under the curve (AUC) quantifies overall effectiveness, with values near 1 reflecting 
+                         excellent classification. This visualization helps select optimal thresholds for diagnosis,
+                          balancing sensitivity and specificity to accurately identify
+                          pneumonia cases while minimizing misclassification of healthy individuals.
+                """)
+                st.image("ROC.png", use_column_width=True)
+              
+
+            with st.expander("Data Accuracy"):
+                st.write("""
+                Our model achieves an accuracy of 90%, with continuous efforts to improve through more 
+                diverse training data and tuning of the model parameters.
+                """)
+                st.image("epoc.png", use_column_width=True)
+
+                
+                
     elif page == "Pneumonia Detection":
-        st.title("Pneumonia Predictor")
+        st.title("🔍Pneumonia Predictor")
         st.markdown("<h4 style='font-size:22px; font-weight:bold; color:lightblue;'>Upload a Chest X-ray Image</h4>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("", type=["jpg", "png", "jpeg"])
         
