@@ -12,12 +12,44 @@ import matplotlib.pyplot as plt
 import calendar 
 from datetime import datetime, timedelta
 import streamlit as st
+from fpdf import FPDF
+import tempfile
+import urllib.parse
 
 # Load the pre-trained model
 model = tf.keras.models.load_model('pneumonia_detection_model.h5')
 
 # Configure page layout and theme
 st.set_page_config(page_title="Lung Health Care Plan Generator", layout="wide", initial_sidebar_state="expanded")
+
+def generate_pdf(content):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    for line in content.split("\n"):
+        pdf.multi_cell(0, 10, line)
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    pdf.output(temp_file.name)
+    
+    return temp_file.name
+
+def generate_share_link(care_plan):
+    # URL encode the care plan for sharing
+    encoded_plan = urllib.parse.quote(care_plan)
+    # Create a mailto link
+    email_subject = urllib.parse.quote("Your Personalized Lung Health Care Plan")
+    email_body = f"Here is your personalized lung health care plan:\n\n{care_plan}"
+    mailto_link = f"mailto:?subject={email_subject}&body={urllib.parse.quote(email_body)}"
+    
+    # Optionally, create a Twitter share link (140 character limit for simplicity)
+    twitter_share_link = f"https://twitter.com/intent/tweet?text={encoded_plan[:140]}"
+    
+    # Add other platforms like WhatsApp, etc., as needed
+    whatsapp_share_link = f"https://wa.me/?text={encoded_plan}"
+
+    return mailto_link, twitter_share_link, whatsapp_share_link
 
 # Custom CSS to improve the app's appearance
 st.markdown("""
@@ -221,10 +253,10 @@ def main():
 
             with st.expander("Data Accuracy"):
                 st.write("""
-                Our model achieves an accuracy of 90%, with continuous efforts to improve through more 
+                Our model achieves an accuracy of 91%, with continuous efforts to improve through more 
                 diverse training data and tuning of the model parameters.
                 """)
-                st.image("epoc.png", use_column_width=True)
+              
 
                 
                 
@@ -260,6 +292,7 @@ def main():
             st.session_state['patient_info'] = patient_info
             st.success("Patient information saved. Please go to the Care Plan tab to generate the plan.")
 
+
     elif page == "Care Plan":
         st.header("📝 Generate Care Plan")
         if 'patient_info' in st.session_state:
@@ -267,7 +300,7 @@ def main():
             prompt = f"""
             Create a comprehensive, personalized lung health care plan for a {patient_info['age']} year-old {patient_info['gender']} patient.
             Patient Details: {patient_info}
-            
+
             Please include:
             1. Detailed treatment recommendations
             2. Medication plan (considering current medications and allergies)
@@ -283,12 +316,30 @@ def main():
             
             with st.spinner("Generating personalized lung health care plan..."):
                 care_plan = generate_summary(prompt)
+                
                 if care_plan:
                     display_summary(care_plan)
+                    
+                    # Generate the PDF
+                    pdf_file = generate_pdf(care_plan)
+                    
+                    # Allow downloading the PDF
+                    with open(pdf_file, "rb") as file:
+                        st.download_button(
+                            label="Download Care Plan as PDF",
+                            data=file,
+                            file_name="lung_health_care_plan.pdf",
+                            mime="application/pdf"
+                        )
+
+                    # Generate share links
+                    mailto_link, twitter_link, whatsapp_link = generate_share_link(care_plan)
+
+                    st.markdown(f"[Share via Email](mailto:{mailto_link})", unsafe_allow_html=True)
+                    st.markdown(f"[Share on Twitter](https://twitter.com/intent/tweet?text={twitter_link})", unsafe_allow_html=True)
+                    st.markdown(f"[Share on WhatsApp](https://wa.me/?text={whatsapp_link})", unsafe_allow_html=True)
                 else:
                     st.error("Unable to generate care plan. Please check your API key and try again.")
-        else:
-            st.warning("Please fill out the Patient Information first.")
 
     elif page == "Tips and Resources":
         st.title("Tips and Resources for Lung Health Management")
