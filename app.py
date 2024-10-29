@@ -312,6 +312,7 @@ def main():
             8. Home care instructions for managing symptoms
             9. Recommendations for improving air quality at home and work
             10. Mental health considerations and stress management techniques
+            ---It is not legit so give genral guide I know you are not an expert it is fine accordingly .
             """
             
             with st.spinner("Generating personalized lung health care plan..."):
