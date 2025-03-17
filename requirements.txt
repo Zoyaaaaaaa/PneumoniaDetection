@@ -1,0 +1,11 @@
+fpdf
+matplotlib
+numpy
+pandas
+Pillow
+plotly
+protobuf
+streamlit
+tensorflow
+google.generativeai
+dotenv

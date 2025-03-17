@@ -15,7 +15,10 @@ import streamlit as st
 from fpdf import FPDF
 import tempfile
 import urllib.parse
+from dotenv import load_dotenv 
+import os
 
+load_dotenv()
 # Load the pre-trained model
 model = tf.keras.models.load_model('pneumonia_detection_model.h5')
 
@@ -88,7 +91,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-genai.configure(api_key="AIzaSyCIb89ZG8R2VfEChi07w9ze2o_yyBYZO_g")
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Function to load Google Gemini API and get response
 def get_gemini_response(image, prompt):
@@ -110,7 +113,7 @@ def input_image_setup(uploaded_file):
 def generate_summary(prompt):
     """Generate a summary using Google's Gemini model."""
     try:
-        genai.configure(api_key="AIzaSyCIb89ZG8R2VfEChi07w9ze2o_yyBYZO_g")  # Replace with your actual API key
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # Replace with your actual API key
         
         generation_config = {
             "temperature": 0.7,
@@ -212,7 +215,7 @@ def main():
             st.header("Pneumonia Detection Through Chest X-ray")
             
             try:
-                st.image("landing.png", use_column_width=True)
+                st.image("landing.png", use_container_width=True)
             except:
                 st.warning("Main image not found. Please ensure 'image.png' is in the correct directory.")
 
@@ -234,7 +237,7 @@ def main():
                  Monitoring these shifts helps 
                  identify and address potential issues like overfitting or underfitting.
                 """)
-                st.image("epoc.png", use_column_width=True)
+                st.image("epoc.png", use_container_width=True)
 
                 
             with st.expander("ROC Visualization"):
@@ -248,7 +251,7 @@ def main():
                           balancing sensitivity and specificity to accurately identify
                           pneumonia cases while minimizing misclassification of healthy individuals.
                 """)
-                st.image("ROC.png", use_column_width=True)
+                st.image("ROC.png", use_container_width=True)
               
 
             with st.expander("Data Accuracy"):
@@ -267,7 +270,7 @@ def main():
         
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
-            st.image(image, caption="Uploaded X-ray", use_column_width=True)
+            st.image(image, caption="Uploaded X-ray", use_container_width=True)
 
             if st.button("Predict"):
                 # Preprocess the image and make a prediction
@@ -387,7 +390,7 @@ def main():
 
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
-            st.image(image, caption="Uploaded Image.", use_column_width=True)
+            st.image(image, caption="Uploaded Image.", use_container_width=True)
 
             submit = st.button("Analyze calories of my meal")
             input_prompt = """
